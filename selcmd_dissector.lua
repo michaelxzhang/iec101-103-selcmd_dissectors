@@ -47,7 +47,8 @@ function selcmd.dissector(buffer,pinfo,tree)
 					Dissector.get("selfm"):call(buffer(startpos,msglen):tvb(), pinfo, tree)
 
 				--it's request, no length field
-				elseif (msgstartbyte2 == 192 and tmpstr3 == masterip) then	--A5C0
+				--elseif (msgstartbyte2 == 192 and tmpstr3 == masterip) then	--A5C0
+				elseif (msgstartbyte2 == 192 and bufferlen == 2) then	--A5C0
 					msglen = 2
 					Dissector.get("selfm"):call(buffer(startpos,msglen):tvb(), pinfo, tree)
 					
@@ -55,7 +56,8 @@ function selcmd.dissector(buffer,pinfo,tree)
 					--pinfo.cols.info = tostring(tmpcol).." (Request) "
 					pinfo.cols.info:append(" (Request) ")
 					
-				elseif msgstartbyte2 == 192 then							--A5C0
+				--elseif msgstartbyte2 == 192 then							--A5C0
+				elseif(msgstartbyte2 == 192 and bufferlen > 2) then
 					msglen = buffer(startpos+2,1):uint() 
 					--Dissector.get("selfm"):call(buffer(startpos,msglen):tvb(), pinfo, tree)
 					if msglen > (bufferlen-startpos) then
@@ -68,7 +70,8 @@ function selcmd.dissector(buffer,pinfo,tree)
 					--pinfo.cols.info = tostring(tmpcol).." (Response) "
 					pinfo.cols.info:append(" (Response) ")
 					
-				elseif (msgstartbyte2 == 193 and tmpstr3 == masterip) then	--A5C1
+				--elseif (msgstartbyte2 == 193 and tmpstr3 == masterip) then	--A5C1
+				elseif (msgstartbyte2 == 193 and bufferlen == 2) then	--A5C1
 					msglen = 2 
 					Dissector.get("selfm"):call(buffer(startpos,msglen):tvb(), pinfo, tree)
 					
@@ -76,7 +79,7 @@ function selcmd.dissector(buffer,pinfo,tree)
 					--pinfo.cols.info = tostring(tmpcol).." (Request) "
 					pinfo.cols.info:append(" (Request) ")
 					
-				elseif msgstartbyte2 == 193 then							--A5C1
+				elseif (msgstartbyte2 == 193 and bufferlen > 2) then							--A5C1
 					msglen = buffer(startpos+2,1):uint() 
 					--Dissector.get("selfm"):call(buffer(startpos,msglen):tvb(), pinfo, tree)
 					if msglen > (bufferlen-startpos) then
@@ -89,7 +92,7 @@ function selcmd.dissector(buffer,pinfo,tree)
 					--pinfo.cols.info = tostring(tmpcol).." (Response) "
 					pinfo.cols.info:append(" (Response) ")
 					
-				elseif (msgstartbyte2 == 194 and tmpstr3 == masterip) then	--A5C2
+				elseif (msgstartbyte2 == 194 and bufferlen == 2) then	--A5C2
 					msglen = 2 
 					Dissector.get("selfm"):call(buffer(startpos,msglen):tvb(), pinfo, tree)
 					
@@ -97,7 +100,7 @@ function selcmd.dissector(buffer,pinfo,tree)
 					--pinfo.cols.info = tostring(tmpcol).." (Request) "
 					pinfo.cols.info:append(" (Request) ")
 					
-				elseif msgstartbyte2 == 194 then							--A5C2
+				elseif (msgstartbyte2 == 194 and bufferlen > 2) then							--A5C2
 					msglen = buffer(startpos+2,1):uint() 
 					--Dissector.get("selfm"):call(buffer(startpos,msglen):tvb(), pinfo, tree)
 					if msglen > (bufferlen-startpos) then
@@ -110,7 +113,7 @@ function selcmd.dissector(buffer,pinfo,tree)
 					--pinfo.cols.info = tostring(tmpcol).." (Response) "
 					pinfo.cols.info:append(" (Response) ")
 					
-				elseif (msgstartbyte2 == 195 and tmpstr3 == masterip) then	--A5C3
+				elseif (msgstartbyte2 == 195 and bufferlen == 2) then	--A5C3
 					msglen = 2 
 					Dissector.get("selfm"):call(buffer(startpos,msglen):tvb(), pinfo, tree)
 					
@@ -118,7 +121,7 @@ function selcmd.dissector(buffer,pinfo,tree)
 					--pinfo.cols.info = tostring(tmpcol).." (Request) "
 					pinfo.cols.info:append(" (Request) ")
 					
-				elseif msgstartbyte2 == 195 then							--A5C3
+				elseif (msgstartbyte2 == 195 and bufferlen > 2) then							--A5C3
 					msglen = buffer(startpos+2,1):uint() 
 					
 					if msglen > (bufferlen-startpos) then
@@ -131,7 +134,7 @@ function selcmd.dissector(buffer,pinfo,tree)
 					--pinfo.cols.info = tostring(tmpcol).." (Response) "
 					pinfo.cols.info:append(" (Response) ")
 					
-				elseif (msgstartbyte2 == 206 and tmpstr3 == masterip) then	--A5CE
+				elseif (msgstartbyte2 == 206 and bufferlen == 2) then	--A5CE
 					msglen = 2 
 					Dissector.get("selfm"):call(buffer(startpos,msglen):tvb(), pinfo, tree)
 					
@@ -139,7 +142,7 @@ function selcmd.dissector(buffer,pinfo,tree)
 					--pinfo.cols.info = tostring(tmpcol).." (Request) "
 					pinfo.cols.info:append(" (Request) ")
 					
-				elseif msgstartbyte2 == 206 then							--A5CE
+				elseif (msgstartbyte2 == 206 and bufferlen > 2) then							--A5CE
 					msglen = buffer(startpos+2,1):uint() 
 					--Dissector.get("selfm"):call(buffer(startpos,msglen):tvb(), pinfo, tree)
 					if msglen > (bufferlen-startpos) then
