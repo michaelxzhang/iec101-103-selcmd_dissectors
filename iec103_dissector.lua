@@ -354,39 +354,39 @@ local iec103_data_type_table = {
 }
 
 iec103_prm1_func_table = {
-[0]   = "Reset of Remote link. SEND/CONFIRM expected",
-[1]   = "Reset of user process. SEND/CONFIRM expected",
-[2]   = "Reserved. SEND/CONFIRM expected",
-[3]   = "User data. SEND/CONFIRM expected",
-[4]   = "User data. SEND/NO REPLY expected",
+[0]   = "Rst Remote link. SEND/CFM expt",
+[1]   = "Rst user process. SEND/CFM expt",
+[2]   = "Reserved. SEND/CFM expt",
+[3]   = "Class 2 available. SEND/CFM expt",
+[4]   = "Class 2 available. SEND/NO REPLY expt",
 [5]   = "Reserved",
-[6]   = "Reserved for special use by agreement",
-[7]   = "Reserved for special use by agreement",
-[8]   = "Expected response specifies access demand. REQUEST for access demand",
-[9]   = "Request status of link. REQUEST/RESPOND expected",
-[10]  = "Request user data class 1. REQUEST/RESPOND expected",
-[11]  = "Request user data class 2. REQUEST/RESPOND expected",
+[6]   = "Reserved",
+[7]   = "Reserved",
+[8]   = "expt response specifies access demand. REQUEST for access demand",
+[9]   = "Request status of link. REQUEST/RESPOND expt",
+[10]  = "Request class 1. REQUEST/RESPOND expt",
+[11]  = "Request class 2. REQUEST/RESPOND expt",
 [12]  = "Reserved",
 [13]  = "Reserved",
-[14]  = "Reserved for special use by agreement",
-[15]  = "Reserved for special use by agreement",
+[14]  = "Reserved",
+[15]  = "Reserved",
 }
 
 iec103_prm0_func_table = {
-[0]   = "ACK:positive acknowledgement. CONFIRM",
-[1]   = "NACK:message not accepted, link busy. CONFIRM",
+[0]   = "ACK:positive ack. CFM",
+[1]   = "NACK:message not accepted, link busy. CFM",
 [2]   = "Reserved",
 [3]   = "Reserved",
 [4]   = "Reserved",
 [5]   = "Reserved",
-[6]   = "Reserved for special use by agreement",
-[7]   = "Reserved for special use by agreement",
-[8]   = "User data. RESPOND",
+[6]   = "Reserved",
+[7]   = "Reserved",
+[8]   = "Class 2 available. RESPOND",
 [9]   = "NACK:requested data not available. RESPOND",
 [10]  = "Reserved",
 [11]  = "Status of link or access demand. RESPOND",
 [12]  = "Reserved",
-[13]  = "Reserved for special use by agreement",
+[13]  = "Reserved",
 [14]  = "Link service not functioning",
 [15]  = "Link service not implemented",
 
@@ -1618,11 +1618,22 @@ function iec103_do_dissector(buffer,pinfo,tree)
 				--pinfo.cols.info = iec103_prm1_func_table[func]
 			end
 		else
-			t1:add(msg_ctrl_fcb_acd,buffer(4,1)," ACD = "..tostring(fcb_acd))
-			t1:add(msg_ctrl_fcv_dfc,buffer(4,1)," DFC = "..tostring(fcv_dfc))
+			
+			local tmpclsstr = ""
+			if fcb_acd == 1 then
+				tmpclsstr = " Class 1 available; "
+			end
+			
+			local tmpdfc = ""
+			if fcv_dfc == 1 then
+				tmpdfc = " further messages may cause overflow"
+			end
+			
+			t1:add(msg_ctrl_fcb_acd,buffer(4,1)," ACD = "..tostring(fcb_acd)..tmpclsstr)
+			t1:add(msg_ctrl_fcv_dfc,buffer(4,1)," DFC = "..tostring(fcv_dfc)..tmpdfc)
 			
 			t1:add(msg_ctrl_fcb_acd,buffer(4,1),iec103_prm0_func_table[func])
-			--pinfo.cols.info = iec103_prm0_func_table[func]
+			--pinfo.cols.info = tmpclsstr..iec103_prm0_func_table[func]
 		end
 		
 		t0:add_le(msg_link_addr,buffer(5,iec103_link_addr_bytes))
@@ -1640,7 +1651,7 @@ function iec103_do_dissector(buffer,pinfo,tree)
 		local tmpstr1 = pinfo.cols.info
 		str1 = "ASDU="..tostring(msgtypeid:uint())
 		str2 = str1.format("%-9s",str1)
-		pinfo.cols.info = tostring(tmpstr1)..str2..iec103_typeid_table[msgtypeid:uint()].."; "
+		pinfo.cols.info = str2..iec103_typeid_table[msgtypeid:uint()].."; "..tostring(tmpstr1)
 		
 		local msgvsq = buffer(6+iec103_link_addr_bytes, 1)
 		local t_vsq = t_asdu:add(msg_vsq,msgvsq)
