@@ -357,8 +357,8 @@ iec103_prm1_func_table = {
 [0]   = "Rst Remote link. SEND/CFM expt",
 [1]   = "Rst user process. SEND/CFM expt",
 [2]   = "Reserved. SEND/CFM expt",
-[3]   = "Class 2 available. SEND/CFM expt",
-[4]   = "Class 2 available. SEND/NO REPLY expt",
+[3]   = "User data. SEND/CFM expt",
+[4]   = "User data. SEND/NO REPLY expt",
 [5]   = "Reserved",
 [6]   = "Reserved",
 [7]   = "Reserved",
@@ -381,7 +381,7 @@ iec103_prm0_func_table = {
 [5]   = "Reserved",
 [6]   = "Reserved",
 [7]   = "Reserved",
-[8]   = "Class 2 available. RESPOND",
+[8]   = "User data. RESPOND",
 [9]   = "NACK:requested data not available. RESPOND",
 [10]  = "Reserved",
 [11]  = "Status of link or access demand. RESPOND",
@@ -1572,14 +1572,17 @@ function iec103_do_dissector(buffer,pinfo,tree)
 			if ((fcv_dfc == 0) and (func == 0 or func == 1 or func == 4 or func == 8 or func == 9)) or 
 			   ((fcv_dfc == 1) and (func == 3 or func == 10 or func == 11)) or
 			   (func == 2 or (func > 5 and func < 7) or (func > 12 and func <15)) then
-				t1:add(msg_ctrl_fcb_acd,buffer(1,1),iec103_prm1_func_table[func])
+				--t1:add(msg_ctrl_fcb_acd,buffer(1,1),iec103_prm1_func_table[func])
+				t1:add(msg_ctrl_func,buffer(1,1),iec103_prm1_func_table[func])
 				pinfo.cols.info = iec103_prm1_func_table[func]
 			end
 		else
 			t1:add(msg_ctrl_fcb_acd,buffer(1,1)," ACD = "..tostring(fcb_acd))
 			t1:add(msg_ctrl_fcv_dfc,buffer(1,1)," DFC = "..tostring(fcv_dfc))
 			
-			t1:add(msg_ctrl_fcb_acd,buffer(1,1),iec103_prm0_func_table[func])
+			--t1:add(msg_ctrl_fcb_acd,buffer(1,1),iec103_prm0_func_table[func])
+			t1:add(msg_ctrl_func,buffer(1,1),iec103_prm0_func_table[func])
+			
 			pinfo.cols.info = iec103_prm0_func_table[func]
 		end
 		
@@ -1614,7 +1617,9 @@ function iec103_do_dissector(buffer,pinfo,tree)
 			if ((fcv_dfc == 0) and (func == 0 or func == 1 or func == 4 or func == 8 or func == 9)) or 
 			   ((fcv_dfc == 1) and (func == 3 or func == 10 or func == 11)) or
 			   (func == 2 or (func > 5 and func < 7) or (func > 12 and func <15)) then
-				t1:add(msg_ctrl_fcb_acd,buffer(4,1),iec103_prm1_func_table[func])
+				--t1:add(msg_ctrl_fcb_acd,buffer(4,1),iec103_prm1_func_table[func])
+				t1:add(msg_ctrl_func,buffer(4,1),iec103_prm1_func_table[func])
+				
 				--pinfo.cols.info = iec103_prm1_func_table[func]
 			end
 		else
@@ -1632,7 +1637,8 @@ function iec103_do_dissector(buffer,pinfo,tree)
 			t1:add(msg_ctrl_fcb_acd,buffer(4,1)," ACD = "..tostring(fcb_acd)..tmpclsstr)
 			t1:add(msg_ctrl_fcv_dfc,buffer(4,1)," DFC = "..tostring(fcv_dfc)..tmpdfc)
 			
-			t1:add(msg_ctrl_fcb_acd,buffer(4,1),iec103_prm0_func_table[func])
+			--t1:add(msg_ctrl_fcb_acd,buffer(4,1),iec103_prm0_func_table[func])
+			t1:add(msg_ctrl_func,buffer(4,1),iec103_prm0_func_table[func])
 			--pinfo.cols.info = tmpclsstr..iec103_prm0_func_table[func]
 		end
 		
