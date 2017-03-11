@@ -857,11 +857,12 @@ end
 function iec101.dissector(buffer,pinfo,tree)
 
 local msgstartbyte = buffer(0,1):uint()
+local iec101_link_addr_bytes = iec101.prefs.linkaddrbytes
 
 if msgstartbyte == 16 then
 	--if message in multiple data packet, need to be reassembled
-	if 5 > buffer:len() then
-		pinfo.desegment_len = 5 - buffer:len()
+	if (4+iec101_link_addr_bytes) > buffer:len() then
+		pinfo.desegment_len = (4+iec101_link_addr_bytes) - buffer:len()
 	else
 		iec101_do_dissector(buffer,pinfo,tree)
 	end
@@ -904,7 +905,7 @@ elseif msgstartbyte == 104 then
 						tmpmsglen = 5
 					end
 				elseif tmpmsgstartbyte == 16 then
-					tmpmsglen = 5				
+					tmpmsglen = 4 + iec101_link_addr_bytes				
 				end
 				
 				--remaining data not enough for one complete data frame
@@ -981,7 +982,13 @@ function iec101_do_dissector(buffer,pinfo,tree)
 		end		
 		
 		
-		t0:add_le(msg_link_addr,buffer(2,iec101_link_addr_bytes))
+		--t0:add_le(msg_link_addr,buffer(2,iec101_link_addr_bytes))
+		
+		if iec101_link_addr_bytes > 0 then
+			t0:add_le(msg_link_addr,buffer(2,iec101_link_addr_bytes))
+		else
+			t0:add_le(msg_link_addr,0)
+		end
 		
 		t0:add(msg_checksum, buffer(2 + iec101_link_addr_bytes,1))
 		t0:add(msg_end, buffer(3 + iec101_link_addr_bytes,1))
@@ -1034,7 +1041,11 @@ function iec101_do_dissector(buffer,pinfo,tree)
 			--pinfo.cols.info = tmpclsstr..iec101_prm0_func_table[func]
 		end		
 		
-		t0:add_le(msg_link_addr,buffer(5,iec101_link_addr_bytes))
+		if iec101_link_addr_bytes > 0 then
+			t0:add_le(msg_link_addr,buffer(5,iec101_link_addr_bytes))
+		else
+			t0:add_le(msg_link_addr,0)
+		end
 		
 		local startpos = 5 + iec101_link_addr_bytes
 		
