@@ -7,13 +7,24 @@ Contacct: michaelxmail[AT]gmail.com
 
 --define constants
 M_SP_NA_1 = 1  
+M_SP_TA_1 = 2  
 M_DP_NA_1 = 3  
+M_DP_TA_1 = 4  
 M_ST_NA_1 = 5  
+M_ST_TA_1 = 6  
 M_BO_NA_1 = 7  
+M_BO_TA_1 = 8  
 M_ME_NA_1 = 9  
+M_ME_TA_1 = 10  
 M_ME_NB_1 = 11 
+M_ME_TB_1 = 12 
 M_ME_NC_1 = 13 
+M_ME_TC_1 = 14 
 M_IT_NA_1 = 15 
+M_IT_TA_1 = 16 
+M_EP_TA_1 = 17
+M_EP_TB_1 = 18
+M_EP_TC_1 = 19
 M_PS_NA_1 = 20 
 M_ME_ND_1 = 21 
 M_SP_TB_1 = 30 
@@ -64,13 +75,24 @@ F_SC_NB_1 = 127
 --Type id description
 iec101_typeid_table = {
 [1  ] = "M_SP_NA_1  single-point information",
+[2  ] = "M_SP_TA_1  single-point information with time tag",
 [3  ] = "M_DP_NA_1  double-point information",
+[4  ] = "M_DP_TA_1  double-point information with time tag",
 [5  ] = "M_ST_NA_1  step position information",
+[6  ] = "M_ST_TA_1  step position information with time tag",
 [7  ] = "M_BO_NA_1  bitstring of 32 bits",
+[8  ] = "M_BO_TA_1  bitstring of 32 bits with time tag",
 [9  ] = "M_ME_NA_1  measured value, normalized value",
+[10 ] = "M_ME_TA_1  measured value, normalized value with time tag",
 [11 ] = "M_ME_NB_1  measured value, scaled value",
+[12 ] = "M_ME_TB_1  measured value, scaled value with time tag",
 [13 ] = "M_ME_NC_1  measured value, short floating point",
+[14 ] = "M_ME_TC_1  measured value, short floating point with time tag",
 [15 ] = "M_IT_NA_1  integrated totals",
+[16 ] = "M_IT_TA_1  integrated totals with time tag",
+[17 ] = "M_EP_TA_1  event of protection equipment with time tag",
+[18 ] = "M_EP_TB_1  packed start events of protection equipment with time tag",
+[19 ] = "M_EP_TC_1  packed output circuit information of protection equipment with time tag",
 [20 ] = "M_PS_NA_1  packed single-point information with status change detection",
 [21 ] = "M_ME_ND_1  measured value, normalized value without quality descriptor",
 [30 ] = "M_SP_TB_1  single-point information with time tag CP56Time2a",
@@ -122,13 +144,24 @@ iec101_typeid_table = {
 
 iec101_typeid2_table = {
 [1  ] = "M_SP_NA_1",
+[2  ] = "M_SP_TA_1",
 [3  ] = "M_DP_NA_1",
+[4  ] = "M_DP_TA_1",
 [5  ] = "M_ST_NA_1",
+[6  ] = "M_ST_TA_1",
 [7  ] = "M_BO_NA_1",
+[8  ] = "M_BO_TA_1",
 [9  ] = "M_ME_NA_1",
+[10 ] = "M_ME_TA_1",
 [11 ] = "M_ME_NB_1",
+[12 ] = "M_ME_TB_1",
 [13 ] = "M_ME_NC_1",
+[14 ] = "M_ME_TC_1",
 [15 ] = "M_IT_NA_1",
+[16 ] = "M_IT_TA_1",
+[17 ] = "M_EP_TA_1",
+[18 ] = "M_EP_TB_1",
+[19 ] = "M_EP_TC_1",
 [20 ] = "M_PS_NA_1",
 [21 ] = "M_ME_ND_1",
 [30 ] = "M_SP_TB_1",
@@ -180,13 +213,24 @@ iec101_typeid2_table = {
 --Type id object length
 iec101_asdu_obj_len_table = {
 [1  ] = 1  ,    --M_SP_NA_1
+[2  ] = 4  ,    --M_SP_TA_1
 [3  ] = 1  ,    --M_DP_NA_1
+[4  ] = 4  ,    --M_DP_TA_1
 [5  ] = 2  ,    --M_ST_NA_1
+[6  ] = 5  ,    --M_ST_TA_1
 [7  ] = 5  ,    --M_BO_NA_1
+[8  ] = 8  ,    --M_BO_TA_1
 [9  ] = 3  ,    --M_ME_NA_1
+[10 ] = 6  ,    --M_ME_TA_1
 [11 ] = 3  ,    --M_ME_NB_1
+[12 ] = 6  ,    --M_ME_TB_1
 [13 ] = 5  ,    --M_ME_NC_1
+[14 ] = 8  ,    --M_ME_TC_1
 [15 ] = 5  ,    --M_IT_NA_1
+[16 ] = 8  ,    --M_IT_TA_1
+[17 ] = 6  ,    --M_EP_TA_1
+[18 ] = 7  ,    --M_EP_TB_1
+[19 ] = 7  ,    --M_EP_TC_1
 [20 ] = 5  ,    --M_PS_NA_1
 [21 ] = 2  ,    --M_ME_ND_1
 [30 ] = 8  ,    --M_SP_TB_1
@@ -679,6 +723,24 @@ function  Add_Object_Value(pinfo,t_obj_single,msgtypeid, buffer, start_pos)
 		t_qds:add(msg_qds_nt,buffer(start_pos, 1),iec101_qds_nt_table[buffer(start_pos,1):bitfield(1,1)])
 		t_qds:add(msg_qds_iv,buffer(start_pos, 1),iec101_qds_iv_table[buffer(start_pos,1):bitfield(0,1)])
 		
+	elseif msgtypeid:uint() == M_ME_TA_1 then
+		pnt_value = buffer(start_pos,2):le_int()
+		--pnt_value = 1000
+		--pnt_v2 = pnt_value/32767.0
+		pnt_valid = buffer(start_pos+2,1):bitfield(0,1)
+		--valuestr = string.format("%.6f",pnt_v2)
+		valuestr = tostring(pnt_value)
+		valuestr = valuestr..", "..iec101_valid_table[pnt_valid]
+		t_obj_single:add(msg_obj_value,buffer(start_pos, 2),valuestr)
+		
+		start_pos = start_pos + 2
+		local t_qds = t_obj_single:add(msg_qds,buffer(start_pos, 1), ">>>")
+		t_qds:add(msg_qds_ov,buffer(start_pos, 1),iec101_qds_ov_table[buffer(start_pos,1):bitfield(7,1)])
+		t_qds:add(msg_qds_bl,buffer(start_pos, 1),iec101_qds_bl_table[buffer(start_pos,1):bitfield(3,1)])
+		t_qds:add(msg_qds_sb,buffer(start_pos, 1),iec101_qds_sb_table[buffer(start_pos,1):bitfield(2,1)])
+		t_qds:add(msg_qds_nt,buffer(start_pos, 1),iec101_qds_nt_table[buffer(start_pos,1):bitfield(1,1)])
+		t_qds:add(msg_qds_iv,buffer(start_pos, 1),iec101_qds_iv_table[buffer(start_pos,1):bitfield(0,1)])
+		
 	elseif msgtypeid:uint() == M_ME_NB_1 then
 		pnt_value = buffer(start_pos,2):le_int()
 		pnt_valid = buffer(start_pos+2,1):bitfield(0,1)
@@ -863,7 +925,75 @@ if msgstartbyte == 16 then
 	--if message in multiple data packet, need to be reassembled
 	if (4+iec101_link_addr_bytes) > buffer:len() then
 		pinfo.desegment_len = (4+iec101_link_addr_bytes) - buffer:len()
+		
+		
+		
+		
+	elseif (4+iec101_link_addr_bytes) < buffer:len() then
+		local tmpmsglen = 4+iec101_link_addr_bytes
+		local tmpbufferlen = buffer:len()
+		local tmpmsgstartbyte = 0
+		local tmppos = 0
+		local asducnt = 0
+		
+		pinfo.cols.info = ""
+		
+		--handle the following situation:
+		--1. TCP frame including multiple completed iec101 data packet
+		--2. TCP frame including multiple completed iec101 data packet and one partial data packet
+		--3. TCP frame including one completed iec101 data packet and one partial data packet
+		while tmpmsglen < tmpbufferlen do
+			
+			asducnt = asducnt + 1
+			
+			iec101_do_dissector(buffer(tmppos,tmpmsglen),pinfo,tree)
+			
+			tmppos = tmppos + tmpmsglen
+			tmpbufferlen = tmpbufferlen - tmpmsglen
+			tmpmsgstartbyte = buffer(tmppos,1):uint()
+			
+			if tmpmsgstartbyte == 104 then
+				if tmpbufferlen > 1 then        --if the remaining length > 1, then it including length info
+					tmpmsglen = buffer(tmppos+1,1):uint()
+					tmpmsglen = tmpmsglen + 6
+				else                            --otherwise, set value greater than 1
+					tmpmsglen = 5
+				end
+			elseif tmpmsgstartbyte == 16 then
+				tmpmsglen = 4 + iec101_link_addr_bytes			
+			elseif tmpmsgstartbyte == 229 then
+				tmpmsglen = 1		
+			end
+			
+			--remaining data not enough for one complete data frame
+			if tmpmsglen > tmpbufferlen then
+				pinfo.desegment_len = DESEGMENT_ONE_MORE_SEGMENT
+				pinfo.desegment_offset = tmppos
+			end
+		
+		end
+		
+		if tmpmsglen == tmpbufferlen then
+			asducnt = asducnt + 1
+			iec101_do_dissector(buffer(tmppos,tmpmsglen),pinfo,tree)
+		end
+		
+		if asducnt > 1 then
+			local tmpstr1 = pinfo.cols.info
+			pinfo.cols.info = "(**"..asducnt.." ASDUs)"..tostring(tmpstr1)
+		end	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 	else
+		pinfo.cols.info = ""
 		iec101_do_dissector(buffer,pinfo,tree)
 	end
 elseif msgstartbyte == 104 then
@@ -905,7 +1035,9 @@ elseif msgstartbyte == 104 then
 						tmpmsglen = 5
 					end
 				elseif tmpmsgstartbyte == 16 then
-					tmpmsglen = 4 + iec101_link_addr_bytes				
+					tmpmsglen = 4 + iec101_link_addr_bytes			
+				elseif tmpmsgstartbyte == 229 then
+					tmpmsglen = 1		
 				end
 				
 				--remaining data not enough for one complete data frame
@@ -934,6 +1066,7 @@ elseif msgstartbyte == 104 then
 		pinfo.desegment_len = DESEGMENT_ONE_MORE_SEGMENT
 	end
 else
+	pinfo.cols.info = ""
 	iec101_do_dissector(buffer,pinfo,tree)
 end
 
@@ -971,14 +1104,25 @@ function iec101_do_dissector(buffer,pinfo,tree)
 			   ((fcv_dfc == 1) and (func == 3 or func == 10 or func == 11)) or
 			   (func == 2 or (func > 5 and func < 7) or (func > 12 and func <15)) then
 				t1:add(msg_ctrl_fcb_acd,buffer(1,1),iec101_prm1_func_table[func])
-				pinfo.cols.info = iec101_prm1_func_table[func]
+				
+				local tmpstr1 = tostring(pinfo.cols.info)
+				if tmpstr1 ~= "" then
+					tmpstr1 = tmpstr1.."||"
+				end
+					
+				pinfo.cols.info = tmpstr1..iec101_prm1_func_table[func]
 			end
 		else
 			t1:add(msg_ctrl_fcb_acd,buffer(1,1)," ACD = "..tostring(fcb_acd))
 			t1:add(msg_ctrl_fcv_dfc,buffer(1,1)," DFC = "..tostring(fcv_dfc))
 			
 			t1:add(msg_ctrl_fcb_acd,buffer(1,1),iec101_prm0_func_table[func])
-			pinfo.cols.info = iec101_prm0_func_table[func]
+			
+			local tmpstr1 = tostring(pinfo.cols.info)
+			if tmpstr1 ~= "" then
+				tmpstr1 = tmpstr1.."||"
+			end
+			pinfo.cols.info = tmpstr1..iec101_prm0_func_table[func]
 		end		
 		
 		
@@ -1061,8 +1205,10 @@ function iec101_do_dissector(buffer,pinfo,tree)
 		local str2
 		local tmpstr1 = pinfo.cols.info
 		str1 = "ASDU="..tostring(msgtypeid:uint())
-		str2 = str1.format("%-9s",str1)
-		pinfo.cols.info = str2..iec101_typeid_table[msgtypeid:uint()].."; "..tostring(tmpstr1)
+		--str2 = str1.format("%-9s",str1)
+		str2 = str1
+		--pinfo.cols.info = str2..iec101_typeid_table[msgtypeid:uint()].."; "..tostring(tmpstr1)
+		pinfo.cols.info = tostring(tmpstr1).."||"..str2..iec101_typeid_table[msgtypeid:uint()]..","
 		
 		startpos = startpos + 1
 		local msgvsq = buffer(startpos, 1)
@@ -1195,8 +1341,13 @@ function iec101_do_dissector(buffer,pinfo,tree)
 		--t0:add(msg_debug,temp)
 		
 	elseif msgstartbyte == 229 then
-		local t0 = tree:add(iec101,buffer(), "IEC 60870-5-101 Linke layer ACK")
-		pinfo.cols.info = "IEC 60870-5-101 Linke layer ACK"
+		local t0 = tree:add(iec101,buffer(), "Linke layer ACK")
+		
+		local tmpstr1 = tostring(pinfo.cols.info)
+		if tmpstr1 ~= "" then
+			tmpstr1 = tmpstr1.."||"
+		end
+		pinfo.cols.info = tmpstr1.."Linke layer ACK"
 	end
 	
 end
