@@ -925,10 +925,7 @@ if msgstartbyte == 16 then
 	--if message in multiple data packet, need to be reassembled
 	if (4+iec101_link_addr_bytes) > buffer:len() then
 		pinfo.desegment_len = (4+iec101_link_addr_bytes) - buffer:len()
-		
-		
-		
-		
+
 	elseif (4+iec101_link_addr_bytes) < buffer:len() then
 		local tmpmsglen = 4+iec101_link_addr_bytes
 		local tmpbufferlen = buffer:len()
@@ -982,16 +979,7 @@ if msgstartbyte == 16 then
 			local tmpstr1 = pinfo.cols.info
 			pinfo.cols.info = "(**"..asducnt.." ASDUs)"..tostring(tmpstr1)
 		end	
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+
 	else
 		pinfo.cols.info = ""
 		iec101_do_dissector(buffer,pinfo,tree)
@@ -1203,12 +1191,18 @@ function iec101_do_dissector(buffer,pinfo,tree)
 		
 		local str1
 		local str2
-		local tmpstr1 = pinfo.cols.info
-		str1 = "ASDU="..tostring(msgtypeid:uint())
+		--local tmpstr1 = pinfo.cols.info
+		
+		local tmpstr1 = tostring(pinfo.cols.info)
+		if tmpstr1 ~= "" then
+			tmpstr1 = tmpstr1.."||"
+		end
+		
+		str1 = "ASDU="..tostring(msgtypeid:uint()).." "
 		--str2 = str1.format("%-9s",str1)
 		str2 = str1
 		--pinfo.cols.info = str2..iec101_typeid_table[msgtypeid:uint()].."; "..tostring(tmpstr1)
-		pinfo.cols.info = tostring(tmpstr1).."||"..str2..iec101_typeid_table[msgtypeid:uint()]..","
+		pinfo.cols.info = tmpstr1..str2..iec101_typeid_table[msgtypeid:uint()]..","
 		
 		startpos = startpos + 1
 		local msgvsq = buffer(startpos, 1)
