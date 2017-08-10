@@ -1666,7 +1666,7 @@ function iec103_do_dissector(buffer,pinfo,tree)
 		local str1
 		local str2
 		local tmpstr1 = pinfo.cols.info
-		str1 = "ASDU="..tostring(msgtypeid:uint())
+		str1 = "TID="..tostring(msgtypeid:uint())
 		str2 = str1.format("%-9s",str1)
 		pinfo.cols.info = str2..iec103_typeid_table[msgtypeid:uint()].."; "..tostring(tmpstr1)
 		
