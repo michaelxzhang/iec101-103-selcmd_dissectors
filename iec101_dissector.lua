@@ -499,7 +499,7 @@ iec101_qoi_table = {
 [41] = "Reserved",
 }
 -- declare our protocol
-iec101 = Proto("iec101", "IEC 60870-5-101")
+iec101 = Proto("iec101", "IEC60870-5-101")
 
 local msg_start = ProtoField.uint8("iec101.Start_Byte","Start",base.HEX)
 local msg_length = ProtoField.uint8("iec101.Msg_Length","Length",base.DEC)
@@ -837,6 +837,28 @@ function  Add_Object_Value(pinfo,t_obj_single,msgtypeid, buffer, start_pos)
 		pnt_valid = buffer(start_pos+2,1):bitfield(0,1)
 		--valuestr = string.format("%.6f",pnt_v2)
 		valuestr = tostring(pnt_value)
+		valuestr = valuestr..", "..iec101_valid_table[pnt_valid]
+		
+		t_obj_single:add(msg_obj_value,buffer(start_pos, 2),valuestr)
+		
+		start_pos = start_pos + 2
+		local t_qds = t_obj_single:add(msg_qds,buffer(start_pos, 1), ">>>")
+		t_qds:add(msg_qds_ov,buffer(start_pos, 1),iec101_qds_ov_table[buffer(start_pos,1):bitfield(7,1)])
+		t_qds:add(msg_qds_bl,buffer(start_pos, 1),iec101_qds_bl_table[buffer(start_pos,1):bitfield(3,1)])
+		t_qds:add(msg_qds_sb,buffer(start_pos, 1),iec101_qds_sb_table[buffer(start_pos,1):bitfield(2,1)])
+		t_qds:add(msg_qds_nt,buffer(start_pos, 1),iec101_qds_nt_table[buffer(start_pos,1):bitfield(1,1)])
+		t_qds:add(msg_qds_iv,buffer(start_pos, 1),iec101_qds_iv_table[buffer(start_pos,1):bitfield(0,1)])
+		
+		start_pos = start_pos + 1
+
+		t_obj_single:add(msg_cp56,buffer(start_pos,7),Get_CP56Time2a(buffer,start_pos))
+
+	elseif msgtypeid:uint() == M_ME_TD_1 then
+		pnt_value = buffer(start_pos,2):le_int()
+		pnt_v2 = pnt_value/32768.0
+		pnt_valid = buffer(start_pos+2,1):bitfield(0,1)
+		valuestr = string.format("%.6f",pnt_v2)
+		--valuestr = tostring(pnt_value)
 		valuestr = valuestr..", "..iec101_valid_table[pnt_valid]
 		
 		t_obj_single:add(msg_obj_value,buffer(start_pos, 2),valuestr)
