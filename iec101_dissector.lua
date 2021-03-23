@@ -509,11 +509,28 @@ iec101_qcc_request_table = {
 [6] = "reserved"
 }
 
+--counter
 iec101_qcc_freeze_table = {
 [0] = "read(no freeze or reset)",
 [1] = "counter freeze without reset(value frozen represents integrated total)",
 [2] = "counter freeze with reset(value frozen represents incremental information)",
 [3] = "counter reset"
+}
+
+--Binary counter reading
+iec101_bcr_carry_table = {
+[0] = "no counter overflow occurred in the corresponding integration period",
+[1] = "counter overflow occurred in the corresponding integration period"
+}
+
+iec101_bcr_ca_table = {
+[0] = "counter was not adjusted since last reading",
+[1] = "counter was adjusted since last reading"
+}
+
+iec101_bcr_iv_table = {
+[0] = "counter reading is valid",
+[1] = "counter reading is invalid"
 }
 
 -- declare our protocol
@@ -557,6 +574,11 @@ local msg_qcc = ProtoField.string("iec101.QCC","QCC")     --Qualifier of couter 
 local msg_qcc_rqt = ProtoField.string("iec101.QCC_RQT","QCC Request")
 local msg_qcc_frz = ProtoField.string("iec101.QCC_FRZ","QCC  Freeze")
 
+local msg_bcr_sq = ProtoField.string("iec101.BCR_SQ","BCR Seq num")
+local msg_bcr_cy = ProtoField.string("iec101.BCR_SQ","BCR CY")
+local msg_bcr_ca = ProtoField.string("iec101.BCR_SQ","BCR CA")
+local msg_bcr_iv = ProtoField.string("iec101.BCR_SQ","BCR IV")
+
 local msg_cp56 = ProtoField.string("iec101.CP56Time2a","CP56Time2a")
 
 local msg_checksum = ProtoField.uint8("iec101.Check_Sum","Check_Sum",base.HEX)
@@ -564,7 +586,7 @@ local msg_end = ProtoField.uint8("iec101.End_Byte","End",base.HEX)
 
 local msg_debug = ProtoField.string("iec101.DebugStr","DebugStr")
 
-iec101.fields = {msg_start,msg_length,msg_length_rep,msg_start_rep,msg_ctrl, msg_link_addr, msg_ASDU, msg_typeid, msg_vsq, msg_checksum, msg_end,msg_vsq_sq,msg_vsq_obj_num, msg_cot , msg_comm_addr, msg_obj_addr, msg_obj, msg_obj_single, msg_obj_value, msg_debug,msg_ctrl_prm,msg_ctrl_fcb_acd, msg_ctrl_fcv_dfc,msg_ctrl_func,msg_qds_bl,msg_qds_iv,msg_qds_nt,msg_qds_ov,msg_qds_sb,msg_qds, msg_cp56 , msg_qcc, msg_qcc_rqt,msg_qcc_frz}
+iec101.fields = {msg_start,msg_length,msg_length_rep,msg_start_rep,msg_ctrl, msg_link_addr, msg_ASDU, msg_typeid, msg_vsq, msg_checksum, msg_end,msg_vsq_sq,msg_vsq_obj_num, msg_cot , msg_comm_addr, msg_obj_addr, msg_obj, msg_obj_single, msg_obj_value, msg_debug,msg_ctrl_prm,msg_ctrl_fcb_acd, msg_ctrl_fcv_dfc,msg_ctrl_func,msg_qds_bl,msg_qds_iv,msg_qds_nt,msg_qds_ov,msg_qds_sb,msg_qds, msg_cp56 , msg_qcc, msg_qcc_rqt,msg_qcc_frz, msg_bcr_ca,msg_bcr_cy,msg_bcr_iv,msg_bcr_sq}
 
 --protocol parameters in Wiresh preference
 local ZEROBYTE   = 0
@@ -792,6 +814,16 @@ function  Add_Object_Value(pinfo,t_obj_single,msgtypeid, buffer, start_pos)
 		t_qds:add(msg_qds_sb,buffer(start_pos, 1),iec101_qds_sb_table[buffer(start_pos,1):bitfield(2,1)])
 		t_qds:add(msg_qds_nt,buffer(start_pos, 1),iec101_qds_nt_table[buffer(start_pos,1):bitfield(1,1)])
 		t_qds:add(msg_qds_iv,buffer(start_pos, 1),iec101_qds_iv_table[buffer(start_pos,1):bitfield(0,1)])
+	
+	elseif msgtypeid:uint() == M_IT_NA_1 then
+		pnt_value = buffer(start_pos,4):le_int()
+		t_obj_single:add(msg_obj_value,buffer(start_pos, 4),pnt_value)
+
+		start_pos = start_pos + 4
+		t_obj_single:add(msg_bcr_sq,buffer(start_pos, 1),buffer(start_pos,1):bitfield(3,5))
+		t_obj_single:add(msg_bcr_cy,buffer(start_pos, 1),iec101_bcr_carry_table[buffer(start_pos,1):bitfield(2,1)])
+		t_obj_single:add(msg_bcr_ca,buffer(start_pos, 1),iec101_bcr_ca_table[buffer(start_pos,1):bitfield(1,1)])
+		t_obj_single:add(msg_bcr_iv,buffer(start_pos, 1),iec101_bcr_iv_table[buffer(start_pos,1):bitfield(0,1)])
 		
 	elseif msgtypeid:uint() == M_SP_TB_1 then
 		pnt_value = buffer(start_pos,1):bitfield(7,1)
