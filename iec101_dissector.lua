@@ -574,6 +574,7 @@ local msg_qcc = ProtoField.string("iec101.QCC","QCC")     --Qualifier of couter 
 local msg_qcc_rqt = ProtoField.string("iec101.QCC_RQT","QCC Request")
 local msg_qcc_frz = ProtoField.string("iec101.QCC_FRZ","QCC  Freeze")
 
+local msg_bcr = ProtoField.string("iec101.BCR","BCR")
 local msg_bcr_sq = ProtoField.string("iec101.BCR_SQ","BCR Seq num")
 local msg_bcr_cy = ProtoField.string("iec101.BCR_SQ","BCR CY")
 local msg_bcr_ca = ProtoField.string("iec101.BCR_SQ","BCR CA")
@@ -586,7 +587,7 @@ local msg_end = ProtoField.uint8("iec101.End_Byte","End",base.HEX)
 
 local msg_debug = ProtoField.string("iec101.DebugStr","DebugStr")
 
-iec101.fields = {msg_start,msg_length,msg_length_rep,msg_start_rep,msg_ctrl, msg_link_addr, msg_ASDU, msg_typeid, msg_vsq, msg_checksum, msg_end,msg_vsq_sq,msg_vsq_obj_num, msg_cot , msg_comm_addr, msg_obj_addr, msg_obj, msg_obj_single, msg_obj_value, msg_debug,msg_ctrl_prm,msg_ctrl_fcb_acd, msg_ctrl_fcv_dfc,msg_ctrl_func,msg_qds_bl,msg_qds_iv,msg_qds_nt,msg_qds_ov,msg_qds_sb,msg_qds, msg_cp56 , msg_qcc, msg_qcc_rqt,msg_qcc_frz, msg_bcr_ca,msg_bcr_cy,msg_bcr_iv,msg_bcr_sq}
+iec101.fields = {msg_start,msg_length,msg_length_rep,msg_start_rep,msg_ctrl, msg_link_addr, msg_ASDU, msg_typeid, msg_vsq, msg_checksum, msg_end,msg_vsq_sq,msg_vsq_obj_num, msg_cot , msg_comm_addr, msg_obj_addr, msg_obj, msg_obj_single, msg_obj_value, msg_debug,msg_ctrl_prm,msg_ctrl_fcb_acd, msg_ctrl_fcv_dfc,msg_ctrl_func,msg_qds_bl,msg_qds_iv,msg_qds_nt,msg_qds_ov,msg_qds_sb,msg_qds, msg_cp56 , msg_qcc, msg_qcc_rqt,msg_qcc_frz, msg_bcr, msg_bcr_ca,msg_bcr_cy,msg_bcr_iv,msg_bcr_sq}
 
 --protocol parameters in Wiresh preference
 local ZEROBYTE   = 0
@@ -820,10 +821,17 @@ function  Add_Object_Value(pinfo,t_obj_single,msgtypeid, buffer, start_pos)
 		t_obj_single:add(msg_obj_value,buffer(start_pos, 4),pnt_value)
 
 		start_pos = start_pos + 4
-		t_obj_single:add(msg_bcr_sq,buffer(start_pos, 1),buffer(start_pos,1):bitfield(3,5))
-		t_obj_single:add(msg_bcr_cy,buffer(start_pos, 1),iec101_bcr_carry_table[buffer(start_pos,1):bitfield(2,1)])
-		t_obj_single:add(msg_bcr_ca,buffer(start_pos, 1),iec101_bcr_ca_table[buffer(start_pos,1):bitfield(1,1)])
-		t_obj_single:add(msg_bcr_iv,buffer(start_pos, 1),iec101_bcr_iv_table[buffer(start_pos,1):bitfield(0,1)])
+		local t_invalid = buffer(start_pos,1):bitfield(0,1)
+		if t_invalid==0 then
+			valuestr = "Valid"
+		else
+			valuestr = "Invalid"
+		end
+		local t_bcr = t_obj_single:add(msg_bcr,buffer(start_pos, 1), valuestr .. " >>>")
+		t_bcr:add(msg_bcr_sq,buffer(start_pos, 1),buffer(start_pos,1):bitfield(3,5))
+		t_bcr:add(msg_bcr_cy,buffer(start_pos, 1),iec101_bcr_carry_table[buffer(start_pos,1):bitfield(2,1)])
+		t_bcr:add(msg_bcr_ca,buffer(start_pos, 1),iec101_bcr_ca_table[buffer(start_pos,1):bitfield(1,1)])
+		t_bcr:add(msg_bcr_iv,buffer(start_pos, 1),iec101_bcr_iv_table[t_invalid])
 		
 	elseif msgtypeid:uint() == M_SP_TB_1 then
 		pnt_value = buffer(start_pos,1):bitfield(7,1)
