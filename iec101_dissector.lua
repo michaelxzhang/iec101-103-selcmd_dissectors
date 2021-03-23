@@ -498,6 +498,24 @@ iec101_qoi_table = {
 [40] = "Reserved",
 [41] = "Reserved",
 }
+
+iec101_qcc_request_table = {
+[0] = "No counter request(not used)",
+[1] = "request couter group 1",
+[2] = "request couter group 2",
+[3] = "request couter group 3",
+[4] = "request couter group 4",
+[5] = "general reqeust counter",
+[6] = "reserved"
+}
+
+iec101_qcc_freeze_table = {
+[0] = "read(no freeze or reset)",
+[1] = "counter freeze without reset(value frozen represents integrated total)",
+[2] = "counter freeze with reset(value frozen represents incremental information)",
+[3] = "counter reset"
+}
+
 -- declare our protocol
 iec101 = Proto("iec101", "IEC60870-5-101")
 
@@ -535,6 +553,10 @@ local msg_qds_sb = ProtoField.string("iec101.QDS_SB","SB")
 local msg_qds_nt = ProtoField.string("iec101.QDS_NT","NT")
 local msg_qds_iv = ProtoField.string("iec101.QDS_IV","IV")
 
+local msg_qcc = ProtoField.string("iec101.QCC","QCC")     --Qualifier of couter interrogation command
+local msg_qcc_rqt = ProtoField.string("iec101.QCC_RQT","QCC Request")
+local msg_qcc_frz = ProtoField.string("iec101.QCC_FRZ","QCC  Freeze")
+
 local msg_cp56 = ProtoField.string("iec101.CP56Time2a","CP56Time2a")
 
 local msg_checksum = ProtoField.uint8("iec101.Check_Sum","Check_Sum",base.HEX)
@@ -542,7 +564,7 @@ local msg_end = ProtoField.uint8("iec101.End_Byte","End",base.HEX)
 
 local msg_debug = ProtoField.string("iec101.DebugStr","DebugStr")
 
-iec101.fields = {msg_start,msg_length,msg_length_rep,msg_start_rep,msg_ctrl, msg_link_addr, msg_ASDU, msg_typeid, msg_vsq, msg_checksum, msg_end,msg_vsq_sq,msg_vsq_obj_num, msg_cot , msg_comm_addr, msg_obj_addr, msg_obj, msg_obj_single, msg_obj_value, msg_debug,msg_ctrl_prm,msg_ctrl_fcb_acd, msg_ctrl_fcv_dfc,msg_ctrl_func,msg_qds_bl,msg_qds_iv,msg_qds_nt,msg_qds_ov,msg_qds_sb,msg_qds, msg_cp56 }
+iec101.fields = {msg_start,msg_length,msg_length_rep,msg_start_rep,msg_ctrl, msg_link_addr, msg_ASDU, msg_typeid, msg_vsq, msg_checksum, msg_end,msg_vsq_sq,msg_vsq_obj_num, msg_cot , msg_comm_addr, msg_obj_addr, msg_obj, msg_obj_single, msg_obj_value, msg_debug,msg_ctrl_prm,msg_ctrl_fcb_acd, msg_ctrl_fcv_dfc,msg_ctrl_func,msg_qds_bl,msg_qds_iv,msg_qds_nt,msg_qds_ov,msg_qds_sb,msg_qds, msg_cp56 , msg_qcc, msg_qcc_rqt,msg_qcc_frz}
 
 --protocol parameters in Wiresh preference
 local ZEROBYTE   = 0
@@ -928,6 +950,14 @@ function  Add_Object_Value(pinfo,t_obj_single,msgtypeid, buffer, start_pos)
 		valuestr = valuestr..", "..iec101_valid_table[pnt_valid]
 		t_obj_single:add(msg_obj_value,buffer(start_pos, iec101_asdu_obj_len_table[msgtypeid:uint()]),valuestr)
 	
+	elseif msgtypeid:uint() == C_CI_NA_1 then
+		local request = buffer(start_pos,1):bitfield(2,6)
+		local freeze  = buffer(start_pos,1):bitfield(0,2)
+		valuestr = request..", "..freeze
+
+		t_obj_single:add(msg_qcc_rqt,buffer(start_pos, 1),"["..request.."] "..iec101_qcc_request_table[request])
+		t_obj_single:add(msg_qcc_frz,buffer(start_pos, 1),"["..freeze.."] "..iec101_qcc_freeze_table[freeze])
+
 	elseif msgtypeid:uint() == C_CS_NA_1 then
 		
 		t_obj_single:add(msg_cp56,buffer(start_pos,7),Get_CP56Time2a(buffer,start_pos))
